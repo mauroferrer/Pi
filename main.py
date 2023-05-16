@@ -14,11 +14,47 @@ app = FastAPI()
 
 data = pd.read_csv('df_arreglado1.csv')
 
-# introduccion
+# Hacemos una introduccion donde va a aparecer nuestro nombre en este caso el mio, Mauro Ferrera 
 @app.get("/")
 def presentacion():
     return {"PI_MLops - Mauro Ferrera"}
 
+
+####CONSULTA 3
+# Esta funcion nos va a retornar la cantidad de peliculas que tiene la franquicia que le indiquemos, su ganancia total y ganancia promedio 
+@app.get('/franquicia/{franquicia}')
+def franquicia(franquicia:str):
+    franquicias_df = data.loc[data['name_production'] == franquicia]#asignamos los datos de la columna 'name_production' a el parametro franquicia
+    cantidad = franquicias_df.shape[0] #contamos la cantidad de registros que aparece la franquicia en la columna 'nameproduction'
+    ganancia_total = franquicias_df['revenue'].sum()#calculamos la suma de la columna 'reveue'
+    ganancia_promedio = ganancia_total / cantidad #sacamos el promedio de las ganancias
+    return{'franquicia':franquicia, 'cantidad':cantidad, 'ganancia_total':ganancia_total, 'ganancia_promedio':ganancia_promedio}
+
+
+
+ ####CONSULTA 4
+ #Esta funcion nos retorna la cantidad de peliculas que se crearon en el pais que le pasemos como parametro
+@app.get('/peliculas_pais/{pais}')
+def peliculas_pais(pais:str):
+    pais_data = data.loc[data['name_countrie'] == pais]#asignamos la columna 'name_countrie' al parametro 'pais'
+    cantidad = pais_data['name_countrie'].value_counts()[pais]#Contamos la cantidad de veces que aparece el pais
+    return 'pais:',pais ,'cantidad de peliculas producidas',cantidad.item()#retornamos la cantidad de peliculas de ese pais
+
+
+
+####CONSULTA 5
+#Esta funcion nos retorna la ganancia total y la cantidad de peliculas de la productora que le pasemos como parametro
+@app.get('/productoras/{productora}')
+def productoras(productora:str):
+    df_productora =data.loc[data['name_production'] == productora]#Asignamos la productora a la columna 'name_production'
+    ganancia_total = df_productora['revenue'].sum()#El total de ingresos que genero la productora
+    peliculas_producidas = df_productora.index.nunique()
+    return{'producotora':productora, 'ganancia':ganancia_total, 'cantidad':peliculas_producidas}
+
+
+
+####CONSULTA NUMERO 1 
+#Creamos una consulta donde segun el mes que indiquemos nos va a arrojar la cantidad de peliculas creadas en ese mes
 @app.get('/peliculas_mes/{mes}')
 def peliculas_mes(mes):
     fechas = pd.to_datetime(data['release_date'], format= '%Y-%m-%d')
@@ -33,35 +69,17 @@ def peliculas_dia(dia):
     respuesta = n_dia.shape[0]
     return {'dia':dia, 'cantidad':respuesta}
 
-@app.get('/franquicia/{franquicia}')
-def franquicia(franquicia:str):
-    franquicias_df = data.loc[data['name_production'] == franquicia]
-    cantidad = franquicias_df.shape[0]
-    ganancia_total = franquicias_df['revenue'].sum()
-    ganancia_promedio = ganancia_total / cantidad
-    return{'franquicia':franquicia, 'cantidad':cantidad, 'ganancia_total':ganancia_total, 'ganancia_promedio':ganancia_promedio}
- 
-@app.get('/peliculas_pais/{pais}')
-def peliculas_pais(pais:str):
-    pais_data = data.loc[data['name_countrie'] == pais]
-    cantidad = pais_data['name_countrie'].value_counts()[pais]
-    return 'pais:',pais ,'cantidad de peliculas producidas',cantidad.item()
 
 
-@app.get('/productoras/{productora}')
-def productoras(productora:str):
-    df_productora =data.loc[data['name_production'] == productora]
-    ganancia_total = df_productora['revenue'].sum()
-    peliculas_producidas = df_productora.index.nunique()
-    return{'producotora':productora, 'ganancia':ganancia_total, 'cantidad':peliculas_producidas}
-
+####CONSULTA 6
+#Esta funcion retornala inversion dedicada, las ganancias, el retorno y el año de la pelicula que le indiquemos como parametro
 @app.get('/retorno/{pelicula}')
 def retorno(pelicula:str):
-    pelicula_df = data.loc[data['title']== pelicula.title()]
-    inversion = pelicula_df['budget'].iloc[0].item()
-    ganancia = pelicula_df['revenue'].iloc[0].item()
-    retorno = pelicula_df['return'].iloc[0].item()
-    anio = pelicula_df['release_year'].iloc[0].item()
+    pelicula_df = data.loc[data['title']== pelicula.title()]#Asignamos titulo al parametro pelicula
+    inversion = pelicula_df['budget'].iloc[0].item()#Obtenemos la inversion de la pelicula
+    ganancia = pelicula_df['revenue'].iloc[0].item()#Obtenemos las ganancias de la pelicula
+    retorno = pelicula_df['return'].iloc[0].item()#Obtenemos el retorno de la pelicula
+    anio = pelicula_df['release_year'].iloc[0].item()#Obtenemos el año de la pelicula
     return{
         'pelicula':pelicula,
         'inversion':inversion,
