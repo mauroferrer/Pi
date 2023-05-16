@@ -1,4 +1,5 @@
   ####Importamos librerias 
+import locale
 from fastapi import FastAPI, HTTPException #Para crear la api
 import pandas as pd # Manejo de dataframes 
 from typing import Optional
